@@ -15,8 +15,6 @@ user_ids = [f'Ue{i}' for i in range(n_users)]
 user_positions_df = pd.DataFrame(user_locations, columns=['Posição X', 'Posição Y'])
 user_positions_df['ID'] = user_ids
 user_positions_df = user_positions_df[['ID', 'Posição X', 'Posição Y']]
-
-# Arredonda as colunas de posição para duas casas decimais
 user_positions_df[['Posição X', 'Posição Y']] = user_positions_df[['Posição X', 'Posição Y']].round(2)
 
 user_positions_df.to_csv('user_positions.csv', index=False)
