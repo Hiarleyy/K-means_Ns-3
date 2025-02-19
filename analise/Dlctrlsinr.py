@@ -6,7 +6,7 @@ import seaborn as sns
 
 #%%
 # Carrega o arquivo CSV em um DataFrame
-df = pd.read_csv('data/DlCtrlSinr.csv')
+df = pd.read_csv(r'C:\Users\Marcos Hiarley\Documents\GitHub\K-means_Ns-3\data\csv\DlPathlossTrace.csv')
 
 df
 #%%

@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 #%%
-df = pd.read_csv('data/RxPacketTrace.csv')
+df = pd.read_csv(r'C:\Users\Marcos Hiarley\Documents\GitHub\K-means_Ns-3\data\csv\RxPacketTrace.csv')
 df
 
 #%%
@@ -94,4 +94,37 @@ plt.figure(figsize=(8, 6))
 plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
 plt.title('CQI MÉDIO POR RNTI - ENB2')
 plt.show()
+# %%
+df = pd.DataFrame(CQI_medio3)
+
+otimo = df[(df['CQI'] > 20)].shape[0]
+bom = df[(df['CQI'] > 15)& (df['CQI'] < 25)].shape[0]
+medio = df[(df['CQI'] < 15) & (df['CQI'] > 10)].shape[0]
+
+labels = ['BOM(>15)', 'MÉDIO(15-10)','ÓTIMO(>20)']
+sizes = [bom,medio,otimo]
+explode = (0.05, 0)  
+
+plt.figure(figsize=(8, 6))
+plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+plt.title('CQI MÉDIO POR RNTI - ENB2')
+plt.show()
+#%%
+df = pd.DataFrame(CQI_medio4)
+
+otimo = df[(df['CQI'] > 20)].shape[0]
+bom = df[(df['CQI'] > 15)& (df['CQI'] < 25)].shape[0]
+medio = df[(df['CQI'] < 15) & (df['CQI'] > 10)].shape[0]
+ruim = df[(df['CQI'] < 10)& df['CQI']> 0].shape[0]
+pessimo = df[(df['CQI'] < 0)].shape[0]
+
+labels = ['BOM(>15)', 'MÉDIO(15-10)','ÓTIMO(>20)','RUIM(<10)','PESSIMO(<0)']
+sizes = [bom,medio,otimo,ruim,pessimo]
+explode = (0.05, 0)  
+
+plt.figure(figsize=(8, 6))
+plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+plt.title('CQI MÉDIO POR RNTI - ENB2')
+plt.show()
+
 # %%

@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #%%
-df = pd.read_csv('data/dlpathlosstrace.csv')
+df = pd.read_csv(r'C:\Users\Marcos Hiarley\Documents\GitHub\K-means_Ns-3\data\csv\DlPathlossTrace.csv')
 print(df.columns)  # Print the columns to verify the names
 
 df # Count the number of occurrences of each value in the 'IMSI' column
@@ -13,7 +13,7 @@ df # Count the number of occurrences of each value in the 'IMSI' column
 def filter_by_rnti(df, imsi_values):
     return {imsi: df[df['IMSI'] == imsi] for imsi in imsi_values}
 
-imsi_values = range(1,4)  # p/ 2 usuarios
+imsi_values = range(1,20)  # p/ 2 usuarios
 filtered_dfs = filter_by_rnti(df, imsi_values)
 
 
