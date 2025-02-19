@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 #%%
-df = pd.read_csv(r'C:\Users\Marcos Hiarley\Documents\GitHub\Ns-3-simulations\5g_lena-Scripts\datasets\csv\UlPathlossTrace.csv' )
+df = pd.read_csv('data/ulpathlosstrace.csv')
 print(df.columns)  # Print the columns to verify the names
 
 df # Count the number of occurrences of each value in the 'IMSI' column

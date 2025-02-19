@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 #%%
-df = pd.read_csv("datasets\RxPacketTrace.txt", sep='\t')
+df = pd.read_csv('data/RxPacketTrace.csv')
 df
 
 #%%
