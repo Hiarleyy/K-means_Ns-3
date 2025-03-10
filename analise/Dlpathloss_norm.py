@@ -75,9 +75,13 @@ ax.set_xlabel('IMSI')
 ax.set_ylabel('Mean PathLoss (dB, valor absoluto)')
 ax.set_title('Mean PathLoss por IMSI agrupados por CellId')
 
+# Define um limite superior para o eixo Y
+y_max = group_df['pathLoss_abs'].max() * 1.3
+ax.set_ylim(0, y_max)
+
 # Cria uma legenda para identificar as cores conforme o CellId
-legend_patches = [patches.Patch(color=cellid_colors[cid], label=f'CellId {cid}') for cid in unique_cellids]
-ax.legend(handles=legend_patches, title='CellId', bbox_to_anchor=(1.05, 1), loc='upper left')
+legend_patches = [patches.Patch(color=cellid_colors[cid], label=f'Antena {cid}') for cid in unique_cellids]
+ax.legend(handles=legend_patches, title='Antena', bbox_to_anchor=(1.05, 1), loc='upper left')
 
 ax.grid(True)
 plt.tight_layout()

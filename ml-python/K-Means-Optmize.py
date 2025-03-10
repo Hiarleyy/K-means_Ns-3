@@ -19,7 +19,7 @@ user_positions_df[['Posição X', 'Posição Y']] = user_positions_df[['Posiçã
 
 user_positions_df.to_csv('user_positions.csv', index=False)
 
-antenna_positions_before = np.array([[0,50],[500,500]])
+antenna_positions_before = np.array([[0,50],[0,500],[500,500],[500,50]])
 
 n_antennas = antenna_positions_before.shape[0]
 kmeans = KMeans(n_clusters=n_antennas)
@@ -28,7 +28,6 @@ kmeans.fit(user_locations)
 antenna_positions_after = kmeans.cluster_centers_
 labels = kmeans.labels_
 
-# Calcula a matriz de custo (distâncias Euclidianas) entre as posições iniciais e os centros dos clusters
 cost_matrix = np.linalg.norm(antenna_positions_before[:, np.newaxis] - antenna_positions_after, axis=2)
 row_ind, col_ind = linear_sum_assignment(cost_matrix)
 
@@ -44,6 +43,16 @@ print('=====================================')
 print('Posicionamento otimizado das antenas (pareado):')
 for i, pos in enumerate(antenna_positions_after_ordered):
     print(f'Antena {i+1}: {pos}')
+
+distancias_originais = np.linalg.norm(user_locations - antenna_positions_before[labels], axis=1)
+print("Distância dos Usuários em relação as antenas:")
+for user_idx, (user_loc, antenna_idx, dist) in enumerate(zip(user_locations, labels, distancias_originais)):
+    print(f"Usuário {user_idx} (posição {user_loc}) -> Antena {antenna_idx} (posição {antenna_positions_before[antenna_idx]}) | Distância: {dist:.2f}")    
+
+distancias_otimizadas = np.linalg.norm(user_locations - antenna_positions_after_ordered[labels], axis=1)
+print("Distância dos Usuários em relação as antenas:")
+for user_idx, (user_loc, antenna_idx, dist) in enumerate(zip(user_locations, labels, distancias_otimizadas)):
+    print(f"Usuário {user_idx} (posição {user_loc}) -> Antena {antenna_idx} (posição {antenna_positions_after_ordered[antenna_idx]}) | Distância: {dist:.2f}")   
 #%%
 plt.figure(figsize=(10, 8))
 plt.scatter(x_users, y_users, c=labels, cmap='viridis', s=50, label="Usuários")

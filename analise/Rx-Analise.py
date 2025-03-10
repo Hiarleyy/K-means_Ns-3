@@ -66,65 +66,99 @@ plt.legend(loc='upper left', bbox_to_anchor=(1, 1), ncol=1)
 plt.tight_layout()
 plt.show()
 #%%
-df = pd.DataFrame(CQI_medio1)
+df = pd.DataFrame(CQI_medio1)  # ou qualquer outro DataFrame correspondente
 
 otimo = df[(df['CQI'] > 20)].shape[0]
-bom = df[(df['CQI'] > 15)& (df['CQI'] < 25)].shape[0]
+bom = df[(df['CQI'] > 15) & (df['CQI'] < 25)].shape[0]
+medio = df[(df['CQI'] < 15) & (df['CQI'] > 10)].shape[0]
+ruim = df[(df['CQI'] < 10) & (df['CQI'] > 0)].shape[0]
+pessimo = df[df['CQI'] < 0].shape[0]
 
-labels = ['BOM(>15)','ÓTIMO(>20)']
-sizes = [bom,otimo]
-explode = (0.05, 0)  
+# Listas originais de labels e sizes
+labels = ['BOM(>15)', 'MÉDIO(15-10)', 'ÓTIMO(>20)', 'RUIM(<10)', 'PESSIMO(<0)']
+sizes = [bom, medio, otimo, ruim, pessimo]
 
+# Filtra apenas as categorias com valores > 0
+filtered = [(label, size) for label, size in zip(labels, sizes) if size > 0]
+if filtered:
+    filtered_labels, filtered_sizes = zip(*filtered)
+else:
+    filtered_labels, filtered_sizes = [], []
+# Cria o gráfico de setores usando as listas filtradas
 plt.figure(figsize=(8, 6))
-plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-plt.title('CQI MEDIO POR RNTI - ENB1')
+plt.pie(filtered_sizes, labels=filtered_labels, autopct='%1.1f%%', startangle=90)
+plt.title('CQI MÉDIO POR RNTI - ENB1')
 plt.show()
 #%%
-df = pd.DataFrame(CQI_medio2)
+df = pd.DataFrame(CQI_medio2)  # ou qualquer outro DataFrame correspondente
 
 otimo = df[(df['CQI'] > 20)].shape[0]
-bom = df[(df['CQI'] > 15)& (df['CQI'] < 25)].shape[0]
+bom = df[(df['CQI'] > 15) & (df['CQI'] < 25)].shape[0]
 medio = df[(df['CQI'] < 15) & (df['CQI'] > 10)].shape[0]
+ruim = df[(df['CQI'] < 10) & (df['CQI'] > 0)].shape[0]
+pessimo = df[df['CQI'] < 0].shape[0]
 
-labels = ['BOM(>15)', 'MÉDIO(15-10)','ÓTIMO(>20)']
-sizes = [bom,medio,otimo]
-explode = (0.05, 0)  
+# Listas originais de labels e sizes
+labels = ['BOM(>15)', 'MÉDIO(15-10)', 'ÓTIMO(>20)', 'RUIM(<10)', 'PESSIMO(<0)']
+sizes = [bom, medio, otimo, ruim, pessimo]
 
+# Filtra apenas as categorias com valores > 0
+filtered = [(label, size) for label, size in zip(labels, sizes) if size > 0]
+if filtered:
+    filtered_labels, filtered_sizes = zip(*filtered)
+else:
+    filtered_labels, filtered_sizes = [], []
+# Cria o gráfico de setores usando as listas filtradas
 plt.figure(figsize=(8, 6))
-plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+plt.pie(filtered_sizes, labels=filtered_labels, autopct='%1.1f%%', startangle=90)
 plt.title('CQI MÉDIO POR RNTI - ENB2')
 plt.show()
 # %%
-df = pd.DataFrame(CQI_medio3)
+df = pd.DataFrame(CQI_medio3)  # ou qualquer outro DataFrame correspondente
 
 otimo = df[(df['CQI'] > 20)].shape[0]
-bom = df[(df['CQI'] > 15)& (df['CQI'] < 25)].shape[0]
+bom = df[(df['CQI'] > 15) & (df['CQI'] < 25)].shape[0]
 medio = df[(df['CQI'] < 15) & (df['CQI'] > 10)].shape[0]
+ruim = df[(df['CQI'] < 10) & (df['CQI'] > 0)].shape[0]
+pessimo = df[df['CQI'] < 0].shape[0]
 
-labels = ['BOM(>15)', 'MÉDIO(15-10)','ÓTIMO(>20)']
-sizes = [bom,medio,otimo]
-explode = (0.05, 0)  
+# Listas originais de labels e sizes
+labels = ['BOM(>15)', 'MÉDIO(15-10)', 'ÓTIMO(>20)', 'RUIM(<10)', 'PESSIMO(<0)']
+sizes = [bom, medio, otimo, ruim, pessimo]
 
+# Filtra apenas as categorias com valores > 0
+filtered = [(label, size) for label, size in zip(labels, sizes) if size > 0]
+if filtered:
+    filtered_labels, filtered_sizes = zip(*filtered)
+else:
+    filtered_labels, filtered_sizes = [], []
+# Cria o gráfico de setores usando as listas filtradas
 plt.figure(figsize=(8, 6))
-plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-plt.title('CQI MÉDIO POR RNTI - ENB2')
+plt.pie(filtered_sizes, labels=filtered_labels, autopct='%1.1f%%', startangle=90)
+plt.title('CQI MÉDIO POR RNTI - ENB3')
 plt.show()
 #%%
-df = pd.DataFrame(CQI_medio4)
+df = pd.DataFrame(CQI_medio4)  # ou qualquer outro DataFrame correspondente
 
 otimo = df[(df['CQI'] > 20)].shape[0]
-bom = df[(df['CQI'] > 15)& (df['CQI'] < 25)].shape[0]
+bom = df[(df['CQI'] > 15) & (df['CQI'] < 25)].shape[0]
 medio = df[(df['CQI'] < 15) & (df['CQI'] > 10)].shape[0]
-ruim = df[(df['CQI'] < 10)& df['CQI']> 0].shape[0]
-pessimo = df[(df['CQI'] < 0)].shape[0]
+ruim = df[(df['CQI'] < 10) & (df['CQI'] > 0)].shape[0]
+pessimo = df[df['CQI'] < 0].shape[0]
 
-labels = ['BOM(>15)', 'MÉDIO(15-10)','ÓTIMO(>20)','RUIM(<10)','PESSIMO(<0)']
-sizes = [bom,medio,otimo,ruim,pessimo]
-explode = (0.05, 0)  
+# Listas originais de labels e sizes
+labels = ['BOM(>15)', 'MÉDIO(15-10)', 'ÓTIMO(>20)', 'RUIM(<10)', 'PESSIMO(<0)']
+sizes = [bom, medio, otimo, ruim, pessimo]
 
+# Filtra apenas as categorias com valores > 0
+filtered = [(label, size) for label, size in zip(labels, sizes) if size > 0]
+if filtered:
+    filtered_labels, filtered_sizes = zip(*filtered)
+else:
+    filtered_labels, filtered_sizes = [], []
+# Cria o gráfico de setores usando as listas filtradas
 plt.figure(figsize=(8, 6))
-plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
-plt.title('CQI MÉDIO POR RNTI - ENB2')
+plt.pie(filtered_sizes, labels=filtered_labels, autopct='%1.1f%%', startangle=90)
+plt.title('CQI MÉDIO POR RNTI - ENB4')
 plt.show()
-
 # %%
