@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tkinter as tk
 from tkinter import filedialog, simpledialog
-from matplotlib import patches
 
 def filter_by_rnti(df, imsi_values):
     return {imsi: df[df['IMSI'] == imsi] for imsi in imsi_values}
@@ -214,4 +213,29 @@ if not data_frames:
 for idx, df in enumerate(data_frames, start=1):
     analyze_dataframe(df, file_number=idx, freq=frequencies[idx-1])
 
+# %%
+# Processa as médias de pathLoss por CellId para cada arquivo CSV selecionado
+# Combina as médias de pathLoss por CellId de todos os arquivos em um único DataFrame
+combined_means = pd.DataFrame()
+
+for idx, df in enumerate(data_frames, start=1):
+    antenna_means = df.groupby('CellId')['pathLoss(dB)'].mean().abs().sort_index()
+    freq = frequencies[idx-1]
+    combined_means[f'{freq} GHz'] = antenna_means
+
+combined_means = combined_means.sort_index()
+print("\nMédias de PathLoss Absolutas por Antena - Todos os Arquivos:")
+print(combined_means)
+
+# Plotagem do gráfico de barras agrupadas para todos os arquivos
+combined_means.plot(kind='bar', figsize=(10,6))
+plt.xlabel('Antena (CellId)')
+plt.ylabel('Média Absoluta do Path Loss (dB)')
+plt.title('Média Absoluta do Path Loss por Antena - Todos os Arquivos')
+plt.grid(axis='y')
+plt.legend(title='Frequência')
+plt.show()
+# %%
+df = pd.read_csv("/home/br4b0/Desktop/PIBIC/K-means_Ns-3/analise/data/28GHZ/DlPathlossTrace.csv")
+df['CellId'].value_counts()
 # %%
