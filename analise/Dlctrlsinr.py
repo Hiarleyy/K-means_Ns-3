@@ -1,291 +1,241 @@
 #%%
-import pandas as pd 
+import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+import tkinter as tk
+from tkinter import filedialog, simpledialog
 
-#%%
-# Carrega o arquivo CSV em um DataFrame
-df = pd.read_csv(r'C:\Users\Marcos Hiarley\Documents\GitHub\K-means_Ns-3\data\csv\DlCtrlSinr.csv')
+def filter_by_rnti(df, rnti_values):
+    return {rnti: df[df['RNTI'] == rnti] for rnti in rnti_values}
 
-df
-#%%
-df['CellId'].unique()
-# %%
-# Função para filtrar DataFrame por CellId
-def filter_by_CellId(df, CellId_values):
-    return {CellId: df[df['CellId'] == CellId] for CellId in CellId_values}
-
-CellId_values = [2,4,6,8]  # Valores de CellId 2 e 4
-filtered_dfs = filter_by_CellId(df, CellId_values)
-
-# Configurações do gráfico
-plt.figure(figsize=(12, 8))
-
-colors = ['b', 'g']  # Define cores para cada usuário
-markers = ['o', 's']  # Define marcadores para cada usuário
-linestyles = ['-', '--']  # Define estilos de linha para cada usuário
-
-# Plota o gráfico de SINR ao longo do tempo para cada CellId
-for i, CellId in enumerate(CellId_values):
-    user_df = filtered_dfs[CellId]
-    plt.plot(user_df['Time'], user_df['SINR(dB)'], label=f'CellId {CellId}', color=colors[i], marker=markers[i], linestyle=linestyles[i], markersize=1, linewidth=1.5, alpha=0.5)  # Define alpha para 0.5 para translucidez
-
-plt.title('SINR ao longo do tempo para CellIds 2 e 4', fontsize=16)
-plt.xlabel('Tempo (seg)', fontsize=14)
-plt.ylabel('SINR (dB)', fontsize=14)
-plt.legend(title='CellIds', fontsize=12, title_fontsize='13')
-plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-plt.minorticks_on()
-plt.tight_layout()
-plt.show()
-
-#%%
-# Gráfico limpo
-plt.figure(figsize=(12, 8))
-
-colors = ['b', 'g', 'r', 'c']  # Define cores para cada usuário
-markers = ['o', 's', 'd', '^']  # Define marcadores para cada usuário
-linestyles = ['-', '--', '-.', ':']  # Define estilos de linha para cada usuário
-
-# Plota o gráfico de SINR ao longo do tempo para cada CellId
-for i, CellId in enumerate(CellId_values):
-    user_df = filtered_dfs[CellId]
-    plt.plot(user_df['Time'], user_df['SINR(dB)'], label=f'CellId {CellId}', color=colors[i], marker=markers[i], linestyle=linestyles[i], markersize=5, linewidth=1.5)
-
-plt.title('SINR ao longo do tempo para CellIds 2 e 4', fontsize=16)
-plt.xlabel('Tempo (seg)', fontsize=14)
-plt.ylabel('SINR (dB)', fontsize=14)
-plt.legend(title='CellIds', fontsize=12, title_fontsize='13')
-plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-plt.minorticks_on()
-plt.tight_layout()
-plt.show()
-
-#%%
-# Gráfico de densidade 3D para cada CellId
-
-fig = plt.figure(figsize=(12, 8))
-ax = fig.add_subplot(111, projection='3d')
-
-# Plota o gráfico de densidade 3D para cada CellId
-for i, CellId in enumerate(CellId_values):
-    user_df = filtered_dfs[CellId]
-    x = user_df['Time']
-    y = user_df['SINR(dB)']
-    z_stat = user_df['SINR(dB)'].mean()  # Calcula a média do SINR para cada CellId
-    z = np.zeros_like(x) + z_stat  # Usa a média do SINR como valor do eixo z
+def analyze_dataframe(df, file_number, freq):
+    print(f"\nAnalisando arquivo {file_number} (Frequência: {freq} GHz)...")
     
-    ax.scatter(x, y, z, label=f'CellId {CellId}', color=colors[i % len(colors)], marker=markers[i % len(markers)], alpha=0.1)  # Define alpha para 0.1 para mais translucidez
-
-# Adiciona a legenda separadamente para evitar transparência
-handles, labels = ax.get_legend_handles_labels()
-for handle in handles:
-    handle.set_alpha(1.0)  # Define alpha para 1.0 para itens da legenda
-
-ax.set_title('Gráfico de densidade (SINR) com média', fontsize=16)
-ax.set_xlabel('Tempo (seg)', fontsize=11)
-ax.set_ylabel('SINR (dB)', fontsize=11)
-ax.legend(handles, labels, title='CellIds', fontsize=11, title_fontsize='11')
-ax.view_init(elev=20., azim=-35)  # Ajusta a elevação e o ângulo para melhor visualização
-plt.subplots_adjust(left=0.2, right=0.9, top=0.9, bottom=0.2)  # Ajusta o gráfico para fazer espaço para o rótulo do eixo z
-ax.set_zlabel('SINR MÉDIO', fontsize=11)
-plt.show()
-
-#%%
-# Gráficos separados para cada CellId
-for i, CellId in enumerate(CellId_values):
+    # Adiciona a frequência caso não exista na coluna (para o plot, se necessário)
+    if 'SignalFrequency' not in df.columns:
+        df['SignalFrequency'] = freq
+        
+    # --- Gráfico 1: SINR UlTrace ---
+    rnti_values = df['RNTI'].unique()
+    filtered_dfs = filter_by_rnti(df, rnti_values)
+    
     plt.figure(figsize=(12, 8))
-    user_df = filtered_dfs[CellId]
-    plt.plot(user_df['Time'], user_df['SINR(dB)'], label=f'CellId {CellId}', color=colors[i % len(colors)], marker=markers[i % len(markers)], linestyle=linestyles[i % len(linestyles)], markersize=5, linewidth=1.5)
-    
-    plt.title(f'SINR ao longo do tempo para CellId {CellId}', fontsize=16)
-    plt.xlabel('Tempo (seg)', fontsize=14)
-    plt.ylabel('SINR (dB)', fontsize=14)
-    plt.legend(title='CellId', fontsize=12, title_fontsize='13')
-    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-    plt.minorticks_on()
-    plt.tight_layout()
+    colors = plt.cm.get_cmap('tab10', len(rnti_values))
+    markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h']
+    for i, rnti in enumerate(rnti_values):
+        user_df = filtered_dfs[rnti]
+        plt.plot(user_df['Time'], user_df['SINR(dB)'],
+                 label=f'RNTI {rnti}',
+                 color=colors(i),
+                 marker=markers[i % len(markers)],
+                 linestyle='-', markersize=1)
+    plt.title(f'SINR UlTrace - Arquivo {file_number}')
+    plt.xlabel('Time')
+    plt.ylabel('SINR (dB)')
+    plt.legend(title='Users')
+    plt.grid(True)
     plt.show()
-
-#%%
-# Gráfico de densidade para cada CellId
-for i, CellId in enumerate(CellId_values):
+    
+    # --- Gráfico 2: Gráficos individuais para grupos de usuários ---
+    num_users = len(rnti_values)
+    users_per_plot = 5
+    sorted_rnti_values = sorted(rnti_values)
+    fixed_colors = ['b', 'g', 'r', 'c', 'm']
+    
+    for start in range(0, num_users, users_per_plot):
+        end = min(start + users_per_plot, num_users)
+        fig, axs = plt.subplots(end - start, 1, figsize=(12, 8), sharex=True)
+        for i, rnti in enumerate(sorted_rnti_values[start:end]):
+            user_df = filtered_dfs[rnti]
+            color = fixed_colors[i % len(fixed_colors)]
+            axs[i].plot(user_df['Time'], user_df['SINR(dB)'],
+                        label=f'RNTI {rnti}', color=color,
+                        marker=markers[i % len(markers)],
+                        linestyle='-', markersize=1)
+            axs[i].set_title(f'SINR Trace {rnti}')
+            axs[i].set_ylabel('SINR (dB)')
+            axs[i].legend()
+            axs[i].grid(True)
+            axs[i].set_ylim(user_df['SINR(dB)'].min() - 0.5,
+                            user_df['SINR(dB)'].max() + 0.5)
+            stats_text = f"Min: {user_df['SINR(dB)'].min():.2f}\nMax: {user_df['SINR(dB)'].max():.2f}\nMean: {user_df['SINR(dB)'].mean():.2f}"
+            axs[i].text(1.01, 0.5, stats_text, transform=axs[i].transAxes,
+                        verticalalignment='center', bbox=dict(facecolor='white', alpha=0.5))
+        axs[-1].set_xlabel('Time')
+        plt.tight_layout()
+        plt.show()
+    
+    # --- Estatísticas descritivas ---
+    df_grouped = df.groupby('RNTI')['SINR(dB)'].describe()
+    print(df_grouped)
+    
+    # --- Gráfico 3: Primeiros e últimos valores de SINR por RNTI ---
+    rows = []
+    for rnti in rnti_values:
+        user_df = filtered_dfs[rnti]
+        first_time = user_df['Time'].iloc[0]
+        first_sinr = user_df['SINR(dB)'].iloc[0]
+        last_time = user_df['Time'].iloc[-1]
+        last_sinr = user_df['SINR(dB)'].iloc[-1]
+        change_percent = ((last_sinr - first_sinr) / first_sinr) * 100
+        rows.append({
+            'RNTI': rnti,
+            'First Time': first_time,
+            'First SINR (dB)': first_sinr,
+            'Last Time': last_time,
+            'Last SINR (dB)': last_sinr,
+            'Change (%)': change_percent
+        })
+    first_last_sinr = pd.DataFrame(rows)
+    print(first_last_sinr)
+    
     plt.figure(figsize=(12, 8))
-    user_df = filtered_dfs[CellId]
-    sns.kdeplot(user_df['SINR(dB)'], label=f'CellId {CellId}', color=colors[i % len(colors)], linestyle=linestyles[i % len(linestyles)], linewidth=1.5)
-    
-    plt.title(f'Gráfico de densidade do SINR para CellId {CellId}', fontsize=16)
-    plt.xlabel('SINR (dB)', fontsize=14)
-    plt.ylabel('Densidade', fontsize=14)
-    plt.legend(title='CellId', fontsize=12, title_fontsize='13')
-    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-    plt.tight_layout()
+    plt.bar(first_last_sinr['RNTI'].astype(str), first_last_sinr['Change (%)'], color='skyblue')
+    plt.title(f'Change in SINR for Each RNTI - Arquivo {file_number}')
+    plt.xlabel('RNTI')
+    plt.ylabel('Change in SINR (%)')
+    plt.grid(True, axis='y')
+    for i, row in first_last_sinr.iterrows():
+        plt.text(i, row['Change (%)'] + 0.5, f"{row['Change (%)']:.2f}%", ha='center', va='bottom')
     plt.show()
-
-#%%
-# Gráfico de mapa de calor usando seaborn
-fig, axs = plt.subplots(len(CellId_values), 1, figsize=(12, 8), sharex=True)
-
-# Plota o gráfico de mapa de calor para cada CellId
-for i, CellId in enumerate(CellId_values):
-    user_df = filtered_dfs[CellId]
     
-    # Remove duplicatas agregando pela média
-    user_df = user_df.groupby(['Time', 'CellId'], as_index=False).mean()
-    
-    pivot_table = user_df.pivot(index="Time", columns="CellId", values="SINR(dB)")
-    sns.heatmap(pivot_table, ax=axs[i], cmap="YlGnBu", cbar=True)
-    
-    axs[i].set_title(f'Mapa de calor do SINR para CellId {CellId}', fontsize=14)
-    axs[i].set_ylabel('Tempo (seg)', fontsize=12)
-
-axs[-1].set_xlabel('CellId', fontsize=12)
-
-plt.tight_layout()
-plt.show()
-
-#%%
-
-fig, ax = plt.subplots(figsize=(10, 5))
-ax.set_xlim(0, 1)
-ax.set_ylim(0, 1)
-ax.axis('off')
-
-message = "CUIDADO COM O RNTI!!"
-ax.text(0.5, 0.5, message, fontsize=24, color='red', ha='center', va='center', fontweight='bold')
-
-plt.show()
-
-
-
-
-# %%
-# Agrupa o DataFrame por CellId e descreve as estatísticas do SINR
-grouped_df = df.groupby('CellId')['SINR(dB)'].describe()
-grouped_df
-
-# %%
-# Calcula a diferença percentual para cada CellId no início e no final da coluna Time
-percentage_diff = {}
-
-# Obtém valores únicos de RNTI
-rnti_values = df['RNTI'].unique()
-
-# Calcula a diferença percentual para cada CellId e RNTI
-for CellId in CellId_values:
-    percentage_diff[CellId] = {}
-    for RNTI in rnti_values:
-        user_df = filtered_dfs[CellId][filtered_dfs[CellId]['RNTI'] == RNTI]
-        if not user_df.empty:
-            start_time = user_df['Time'].min()
-            end_time = user_df['Time'].max()
-            
-            start_sinr = user_df[user_df['Time'] == start_time]['SINR(dB)'].values[0]
-            end_sinr = user_df[user_df['Time'] == end_time]['SINR(dB)'].values[0]
-            
-            percentage_diff[CellId][RNTI] = ((end_sinr - start_sinr) / start_sinr) * 100
-
-# Plota a diferença percentual para cada CellId e RNTI
-for CellId in CellId_values:
-    fig, ax = plt.subplots(figsize=(12, 8))
-    rnti_diff = percentage_diff[CellId]
-    bars = ax.bar(rnti_diff.keys(), rnti_diff.values(), color=[colors[CellId_values.index(CellId) % len(colors)] for _ in range(len(rnti_diff))], edgecolor='black')
-    
-    # Adiciona rótulos de valor no topo de cada barra
-    for bar in bars:
-        yval = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.2f}%', ha='center', va='bottom' if yval >= 0 else 'top', fontsize=10, color='black')
-    
-    ax.axhline(0, color='black', linewidth=0.8)  # Adiciona uma linha horizontal em y=0
-    ax.set_ylim(min(rnti_diff.values()) - 5, max(rnti_diff.values()) + 5)  # Ajusta os limites do eixo y com uma margem
-    ax.set_title(f'Diferença percentual no SINR para CellId {CellId}', fontsize=14)
-    ax.set_ylabel('Diferença percentual (%)', fontsize=12)
-    ax.set_xlabel('RNTI', fontsize=12)
-    ax.grid(True, linestyle='--', linewidth=0.5, axis='y')
-    ax.set_xticks(list(rnti_diff.keys()))
-    ax.set_xticklabels([int(rnti) for rnti in rnti_diff.keys()], fontsize=12)
-    plt.tight_layout()
-    plt.show()
-
-# %%
-# Calcula a diferença percentual média para cada CellId
-average_percentage_diff = {CellId: np.mean(list(rnti_diff.values())) for CellId, rnti_diff in percentage_diff.items()}
-
-# Plota a diferença percentual média para cada CellId
-fig, ax = plt.subplots(figsize=(12, 8))
-bars = ax.bar(average_percentage_diff.keys(), average_percentage_diff.values(), color=[colors[CellId_values.index(CellId) % len(colors)] for CellId in average_percentage_diff.keys()], edgecolor='black')
-
-# Adiciona rótulos de valor no topo de cada barra
-for bar in bars:
-    yval = bar.get_height()
-    ax.text(bar.get_x() + bar.get_width()/2, yval, f'{yval:.2f}%', ha='center', va='bottom' if yval >= 0 else 'top', fontsize=10, color='black')
-
-ax.axhline(0, color='black', linewidth=0.8)  # Adiciona uma linha horizontal em y=0
-ax.set_ylim(min(average_percentage_diff.values()) - 5, max(average_percentage_diff.values()) + 5)  # Ajusta os limites do eixo y com uma margem
-ax.set_title('Diferença percentual média no SINR para cada CellId', fontsize=14)
-ax.set_ylabel('Diferença percentual média (%)', fontsize=12)
-ax.set_xlabel('CellId', fontsize=12)
-ax.grid(True, linestyle='--', linewidth=0.5, axis='y')
-ax.set_xticks(list(average_percentage_diff.keys()))
-ax.set_xticklabels([int(cellid) for cellid in average_percentage_diff.keys()], fontsize=12)
-plt.tight_layout()
-plt.show()
-
-# %%
-# Cria um DataFrame para armazenar os valores de tempo inicial e final para cada RNTI e CellId
-time_values = []
-
-for CellId in CellId_values:
-    for RNTI in rnti_values:
-        user_df = filtered_dfs[CellId][filtered_dfs[CellId]['RNTI'] == RNTI]
-        if not user_df.empty:
-            start_time = user_df['Time'].min()
-            end_time = user_df['Time'].max()
-            start_sinr = user_df[user_df['Time'] == start_time]['SINR(dB)'].values[0]
-            end_sinr = user_df[user_df['Time'] == end_time]['SINR(dB)'].values[0]
-            time_values.append({'CellId': CellId, 'RNTI': RNTI, 'Start Time': start_time, 'End Time': end_time, 'Start SINR': start_sinr, 'End SINR': end_sinr})
-
-time_df = pd.DataFrame(time_values)
-time_df
-
-#%%
-# Plota a variação do SINR ao longo do tempo para cada RNTI, separado por CellId
-for CellId in CellId_values:
+    # --- Gráfico 4: Relação entre RNTI e CellId ao longo do tempo ---
     plt.figure(figsize=(12, 8))
-    for RNTI in rnti_values:
-        user_df = filtered_dfs[CellId][filtered_dfs[CellId]['RNTI'] == RNTI]
-        if not user_df.empty:
-            plt.plot(user_df['Time'], user_df['SINR(dB)'], label=f'RNTI {RNTI}', linestyle='-', linewidth=1.5, alpha=0.5)  # Define alpha para 0.5 para translucidez
-    
-    plt.title(f'Variação do SINR ao longo do tempo para CellId {CellId}', fontsize=16)
-    plt.xlabel('Tempo (seg)', fontsize=14)
-    plt.ylabel('SINR (dB)', fontsize=14)
-    plt.legend(title='RNTI', fontsize=12, title_fontsize='13')
-    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-    plt.minorticks_on()
-    plt.tight_layout()
+    for rnti in rnti_values:
+        user_df = filtered_dfs[rnti]
+        plt.plot(user_df['Time'], user_df['CellId'],
+                 label=f'RNTI {rnti}', marker='o', linestyle='-', markersize=1)
+        cellid_changes = user_df['CellId'].diff().fillna(0) != 0
+        plt.scatter(user_df['Time'][cellid_changes], user_df['CellId'][cellid_changes],
+                    color='red', zorder=5)
+    plt.title(f'RNTI to CellId Over Time - Arquivo {file_number}')
+    plt.xlabel('Time')
+    plt.ylabel('CellId')
+    plt.legend(title='Users')
+    plt.grid(True)
     plt.show()
-
-# %%
-# Plota a variação do SINR ao longo do tempo para cada RNTI, mostrando diferenças por CellId
-for RNTI in rnti_values:
+    
+    # --- Estatísticas de CellId ---
+    print(df['CellId'].value_counts())
+    cellid_rnti_grouped = df.groupby(['CellId', 'RNTI']).size().reset_index(name='Count')
+    print(cellid_rnti_grouped)
+    
+    # --- Gráfico 5: SINR Trace para CellId 3 ---
+    filtered_df_3 = df[df['CellId'] == 3]
+    filtered_rnti_values_3 = filtered_df_3['RNTI'].unique()
+    filtered_dfs_3 = filter_by_rnti(filtered_df_3, filtered_rnti_values_3)
+    
     plt.figure(figsize=(12, 8))
-    for CellId in CellId_values:
-        user_df = filtered_dfs[CellId][filtered_dfs[CellId]['RNTI'] == RNTI]
-        if not user_df.empty:
-            plt.plot(user_df['Time'], user_df['SINR(dB)'], label=f'CellId {CellId}', linestyle='-', linewidth=1.5, alpha=0.5)  # Define alpha para 0.5 para translucidez
+    colors = plt.cm.get_cmap('tab10', len(filtered_rnti_values_3))
+    for i, rnti in enumerate(filtered_rnti_values_3):
+        user_df = filtered_dfs_3[rnti]
+        plt.plot(user_df['Time'], user_df['SINR(dB)'],
+                 label=f'RNTI {rnti}', color=colors(i),
+                 marker=markers[i % len(markers)], linestyle='-', markersize=1)
+    plt.title(f'SINR for CellId 3 - Arquivo {file_number}')
+    plt.xlabel('Time')
+    plt.ylabel('SINR (dB)')
+    plt.legend(title='Users')
+    plt.grid(True)
+    plt.show()
     
-    plt.title(f'Variação do SINR ao longo do tempo para RNTI {RNTI}', fontsize=16)
-    plt.xlabel('Tempo (seg)', fontsize=14)
-    plt.ylabel('SINR (dB)', fontsize=14)
-    plt.legend(title='CellId', fontsize=12, title_fontsize='13')
-    plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-    plt.minorticks_on()
-    plt.tight_layout()
+    # --- Gráfico 6: Primeiros e últimos valores de SINR para todos os CellId ---
+    all_rows = []
+    cellid_values = df['CellId'].unique()
+    
+    def calculate_first_last_sinr(cell_id, filtered_dfs):
+        rows = []
+        for rnti in filtered_dfs.keys():
+            user_df = filtered_dfs[rnti]
+            first_time = user_df['Time'].iloc[0]
+            first_sinr = user_df['SINR(dB)'].iloc[0]
+            last_time = user_df['Time'].iloc[-1]
+            last_sinr = user_df['SINR(dB)'].iloc[-1]
+            change_percent = ((last_sinr - first_sinr) / first_sinr) * 100
+            rows.append({
+                'CellId': cell_id,
+                'RNTI': rnti,
+                'First Time': first_time,
+                'First SINR (dB)': first_sinr,
+                'Last Time': last_time,
+                'Last SINR (dB)': last_sinr,
+                'Change (%)': change_percent
+            })
+        return rows
+
+    for cell_id in cellid_values:
+        filtered_df = df[df['CellId'] == cell_id]
+        filtered_rnti_values = filtered_df['RNTI'].unique()
+        filtered_dfs_temp = filter_by_rnti(filtered_df, filtered_rnti_values)
+        all_rows.extend(calculate_first_last_sinr(cell_id, filtered_dfs_temp))
+    
+    first_last_sinr_all = pd.DataFrame(all_rows)
+    
+    plt.figure(figsize=(12, 8))
+    for cell_id in cellid_values:
+        cell_df = first_last_sinr_all[first_last_sinr_all['CellId'] == cell_id]
+        plt.bar(cell_df['RNTI'].astype(str), cell_df['Change (%)'], label=f'CellId {cell_id}')
+    plt.title(f'Change in SINR for Each RNTI (All CellId) - Arquivo {file_number}')
+    plt.xlabel('RNTI')
+    plt.ylabel('Change in SINR (%)')
+    plt.legend(title='CellId')
+    for i, row in first_last_sinr_all.iterrows():
+        plt.text(i, row['Change (%)'] + 0.5, f"{row['Change (%)']:.2f}%", ha='center', va='bottom', fontsize=8)
     plt.show()
 
+# Início do script de seleção de arquivos
+root = tk.Tk()
+root.withdraw()
+
+num_files = simpledialog.askinteger("Input", "Quantos arquivos deseja selecionar?", minvalue=1)
+data_frames = []
+frequencies = []
+
+for i in range(num_files):
+    freq = simpledialog.askfloat("Input", f"Digite a frequência do sinal (GHz) para o arquivo {i+1}:")
+    frequencies.append(freq)
+    
+    file_path = filedialog.askopenfilename(
+        title=f"Selecione o arquivo {i+1}",
+        filetypes=[("CSV Files", "*.csv"), ("All Files", "*.*")]
+    )
+    
+    if file_path:
+        df_temp = pd.read_csv(file_path)
+        df_temp['SignalFrequency'] = freq
+        data_frames.append(df_temp)
+
+if not data_frames:
+    print("Nenhum arquivo foi selecionado.")
+    exit()
+
+# Processa cada arquivo separadamente
+for idx, df in enumerate(data_frames, start=1):
+    analyze_dataframe(df, file_number=idx, freq=frequencies[idx-1])
+
 # %%
-# Conta a quantidade de ocorrências de cada RNTI
-df['RNTI'].value_counts()
+# Processa as médias de SINR por CellId para cada arquivo CSV selecionado
+# Combina as médias de SINR por CellId de todos os arquivos em um único DataFrame
+combined_means = pd.DataFrame()
+
+for idx, df in enumerate(data_frames, start=1):
+    antenna_means = df.groupby('CellId')['SINR(dB)'].mean().abs().sort_index()
+    freq = frequencies[idx-1]
+    combined_means[f'{freq} GHz'] = antenna_means
+
+combined_means = combined_means.sort_index()
+print("\nMédias Absolutas de SINR por Antena - Todos os Arquivos:")
+print(combined_means)
+
+# Plotagem do gráfico de barras agrupadas para todos os arquivos
+combined_means.plot(kind='bar', figsize=(10,6))
+plt.xlabel('Antena (CellId)')
+plt.ylabel('Média Absoluta do SINR (dB)')
+plt.title('Média Absoluta do SINR por Antena - Todos os Arquivos')
+plt.grid(axis='y')
+plt.legend(title='Frequência')
+plt.show()
+# %%
+df = pd.read_csv("/home/br4b0/Desktop/PIBIC/K-means_Ns-3/analise/data/28GHZ/DlPathlossTrace.csv")
+df['CellId'].value_counts()
 # %%
