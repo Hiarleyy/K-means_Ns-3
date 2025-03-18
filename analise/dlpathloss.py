@@ -1,7 +1,6 @@
 #%%
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 import tkinter as tk
 from tkinter import filedialog, simpledialog
 
@@ -224,14 +223,14 @@ for idx, df in enumerate(data_frames, start=1):
     combined_means[f'{freq} GHz'] = antenna_means
 
 combined_means = combined_means.sort_index()
-print("\nMédias de PathLoss Absolutas por Antena - Todos os Arquivos:")
+print("\nMédias de PathLoss Absolutas por Antena")
 print(combined_means)
 
 # Plotagem do gráfico de barras agrupadas para todos os arquivos
 combined_means.plot(kind='bar', figsize=(10,6))
 plt.xlabel('Antena (CellId)')
 plt.ylabel('Média Absoluta do Path Loss (dB)')
-plt.title('Média Absoluta do Path Loss por Antena - Todos os Arquivos')
+plt.title('Média Absoluta do Path Loss por Antena')
 plt.grid(axis='y')
 plt.legend(title='Frequência')
 plt.show()

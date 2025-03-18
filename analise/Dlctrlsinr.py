@@ -1,7 +1,6 @@
 #%%
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 import tkinter as tk
 from tkinter import filedialog, simpledialog
 
@@ -14,6 +13,13 @@ def analyze_dataframe(df, file_number, freq):
     # Adiciona a frequência caso não exista na coluna (para o plot, se necessário)
     if 'SignalFrequency' not in df.columns:
         df['SignalFrequency'] = freq
+    
+    # Create a mapping from actual CellId to sequential IDs - MOVED THIS UP to make AntennaSeq available for all plots
+    unique_cell_ids = sorted(df['CellId'].unique())
+    cell_id_mapping = {cell_id: i+1 for i, cell_id in enumerate(unique_cell_ids)}
+    
+    # Create a new column with sequential antenna numbers - MOVED THIS UP
+    df['AntennaSeq'] = df['CellId'].map(cell_id_mapping)
         
     # --- Gráfico 1: SINR UlTrace ---
     rnti_values = df['RNTI'].unique()
@@ -101,47 +107,55 @@ def analyze_dataframe(df, file_number, freq):
     
     # --- Gráfico 4: Relação entre RNTI e CellId ao longo do tempo ---
     plt.figure(figsize=(12, 8))
+    
     for rnti in rnti_values:
         user_df = filtered_dfs[rnti]
-        plt.plot(user_df['Time'], user_df['CellId'],
+        plt.plot(user_df['Time'], user_df['AntennaSeq'],
                  label=f'RNTI {rnti}', marker='o', linestyle='-', markersize=1)
         cellid_changes = user_df['CellId'].diff().fillna(0) != 0
-        plt.scatter(user_df['Time'][cellid_changes], user_df['CellId'][cellid_changes],
+        plt.scatter(user_df['Time'][cellid_changes], user_df['AntennaSeq'][cellid_changes],
                     color='red', zorder=5)
-    plt.title(f'RNTI to CellId Over Time - Arquivo {file_number}')
+    plt.title(f'RNTI to Antenna Over Time - Arquivo {file_number}')
     plt.xlabel('Time')
-    plt.ylabel('CellId')
+    plt.ylabel('Antenna')
     plt.legend(title='Users')
     plt.grid(True)
     plt.show()
     
     # --- Estatísticas de CellId ---
-    print(df['CellId'].value_counts())
+    print("Contagem de amostras por Antena (CellId):")
+    cell_counts = df['CellId'].value_counts().sort_index()
+    for actual_id, count in cell_counts.items():
+        seq_id = cell_id_mapping[actual_id]
+        print(f"Antena {seq_id} (CellId {actual_id}): {count}")
+    
     cellid_rnti_grouped = df.groupby(['CellId', 'RNTI']).size().reset_index(name='Count')
     print(cellid_rnti_grouped)
     
-    # --- Gráfico 5: SINR Trace para CellId 3 ---
-    filtered_df_3 = df[df['CellId'] == 3]
-    filtered_rnti_values_3 = filtered_df_3['RNTI'].unique()
-    filtered_dfs_3 = filter_by_rnti(filtered_df_3, filtered_rnti_values_3)
+    # --- Gráfico 5: SINR Trace para uma antena específica ---
+    # Original: plot for CellId 3
+    # Modified: Use the first CellId and show it as Antenna 1
+    target_cell_id = unique_cell_ids[0]  # Use the first CellId
+    filtered_df_specific = df[df['CellId'] == target_cell_id]
+    filtered_rnti_values_specific = filtered_df_specific['RNTI'].unique()
+    filtered_dfs_specific = filter_by_rnti(filtered_df_specific, filtered_rnti_values_specific)
     
     plt.figure(figsize=(12, 8))
-    colors = plt.cm.get_cmap('tab10', len(filtered_rnti_values_3))
-    for i, rnti in enumerate(filtered_rnti_values_3):
-        user_df = filtered_dfs_3[rnti]
+    colors = plt.cm.get_cmap('tab10', len(filtered_rnti_values_specific))
+    for i, rnti in enumerate(filtered_rnti_values_specific):
+        user_df = filtered_dfs_specific[rnti]
         plt.plot(user_df['Time'], user_df['SINR(dB)'],
                  label=f'RNTI {rnti}', color=colors(i),
                  marker=markers[i % len(markers)], linestyle='-', markersize=1)
-    plt.title(f'SINR for CellId 3 - Arquivo {file_number}')
+    plt.title(f'SINR for Antenna 1 (CellId {target_cell_id}) - Arquivo {file_number}')
     plt.xlabel('Time')
     plt.ylabel('SINR (dB)')
     plt.legend(title='Users')
     plt.grid(True)
     plt.show()
     
-    # --- Gráfico 6: Primeiros e últimos valores de SINR para todos os CellId ---
+    # --- Gráfico 6: Primeiros e últimos valores de SINR para todas as antenas ---
     all_rows = []
-    cellid_values = df['CellId'].unique()
     
     def calculate_first_last_sinr(cell_id, filtered_dfs):
         rows = []
@@ -154,6 +168,7 @@ def analyze_dataframe(df, file_number, freq):
             change_percent = ((last_sinr - first_sinr) / first_sinr) * 100
             rows.append({
                 'CellId': cell_id,
+                'AntennaSeq': cell_id_mapping[cell_id],
                 'RNTI': rnti,
                 'First Time': first_time,
                 'First SINR (dB)': first_sinr,
@@ -163,7 +178,7 @@ def analyze_dataframe(df, file_number, freq):
             })
         return rows
 
-    for cell_id in cellid_values:
+    for cell_id in unique_cell_ids:
         filtered_df = df[df['CellId'] == cell_id]
         filtered_rnti_values = filtered_df['RNTI'].unique()
         filtered_dfs_temp = filter_by_rnti(filtered_df, filtered_rnti_values)
@@ -172,13 +187,13 @@ def analyze_dataframe(df, file_number, freq):
     first_last_sinr_all = pd.DataFrame(all_rows)
     
     plt.figure(figsize=(12, 8))
-    for cell_id in cellid_values:
-        cell_df = first_last_sinr_all[first_last_sinr_all['CellId'] == cell_id]
-        plt.bar(cell_df['RNTI'].astype(str), cell_df['Change (%)'], label=f'CellId {cell_id}')
-    plt.title(f'Change in SINR for Each RNTI (All CellId) - Arquivo {file_number}')
+    for antenna_seq in sorted(first_last_sinr_all['AntennaSeq'].unique()):
+        cell_df = first_last_sinr_all[first_last_sinr_all['AntennaSeq'] == antenna_seq]
+        plt.bar(cell_df['RNTI'].astype(str), cell_df['Change (%)'], label=f'Antena {antenna_seq}')
+    plt.title(f'Change in SINR for Each RNTI (All Antennas) - Arquivo {file_number}')
     plt.xlabel('RNTI')
     plt.ylabel('Change in SINR (%)')
-    plt.legend(title='CellId')
+    plt.legend(title='Antenna')
     for i, row in first_last_sinr_all.iterrows():
         plt.text(i, row['Change (%)'] + 0.5, f"{row['Change (%)']:.2f}%", ha='center', va='bottom', fontsize=8)
     plt.show()
@@ -219,19 +234,31 @@ for idx, df in enumerate(data_frames, start=1):
 combined_means = pd.DataFrame()
 
 for idx, df in enumerate(data_frames, start=1):
-    antenna_means = df.groupby('CellId')['SINR(dB)'].mean().abs().sort_index()
+    # Create a mapping from actual CellId to sequential IDs for this file
+    unique_cell_ids = sorted(df['CellId'].unique())
+    cell_id_mapping = {cell_id: i+1 for i, cell_id in enumerate(unique_cell_ids)}
+    
+    # Group by CellId, calculate mean, and then rename the index
+    antenna_means = df.groupby('CellId')['SINR(dB)'].mean().abs()
+    
+    # Convert to DataFrame to be able to rename index
+    temp_df = antenna_means.to_frame()
+    temp_df['AntennaSeq'] = temp_df.index.map(cell_id_mapping)
+    
+    # Set new index and sort
+    temp_df = temp_df.set_index('AntennaSeq').sort_index()
+    
     freq = frequencies[idx-1]
-    combined_means[f'{freq} GHz'] = antenna_means
+    combined_means[f'{freq} GHz'] = temp_df['SINR(dB)']
 
-combined_means = combined_means.sort_index()
-print("\nMédias Absolutas de SINR por Antena - Todos os Arquivos:")
+print("\nMédias Absolutas de SINR por Antena")
 print(combined_means)
 
 # Plotagem do gráfico de barras agrupadas para todos os arquivos
 combined_means.plot(kind='bar', figsize=(10,6))
-plt.xlabel('Antena (CellId)')
+plt.xlabel('Antena')
 plt.ylabel('Média Absoluta do SINR (dB)')
-plt.title('Média Absoluta do SINR por Antena - Todos os Arquivos')
+plt.title('Média Absoluta do SINR por Antena')
 plt.grid(axis='y')
 plt.legend(title='Frequência')
 plt.show()
