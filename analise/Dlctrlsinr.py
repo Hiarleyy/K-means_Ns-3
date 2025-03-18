@@ -255,12 +255,22 @@ print("\nMédias Absolutas de SINR por Antena")
 print(combined_means)
 
 # Plotagem do gráfico de barras agrupadas para todos os arquivos
-combined_means.plot(kind='bar', figsize=(10,6))
-plt.xlabel('Antena')
+ax = combined_means.plot(kind='bar', figsize=(12, 7))
+plt.xlabel('Antenas')
 plt.ylabel('Média Absoluta do SINR (dB)')
 plt.title('Média Absoluta do SINR por Antena')
 plt.grid(axis='y')
-plt.legend(title='Frequência')
+
+# Centraliza a legenda abaixo do gráfico com tamanho reduzido
+plt.legend(title='Frequência', 
+           loc='upper center', 
+           bbox_to_anchor=(0.5, -0.12),
+           ncol=min(len(frequencies), 3),  # Distribui as frequências em até 3 colunas
+           fontsize='small',
+           frameon=True,
+           framealpha=0.7)
+
+plt.tight_layout(rect=[0, 0.05, 1, 0.95])  # Ajusta o layout para acomodar a legenda
 plt.show()
 # %%
 df = pd.read_csv("/home/br4b0/Desktop/PIBIC/K-means_Ns-3/analise/data/28GHZ/DlPathlossTrace.csv")
