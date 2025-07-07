@@ -129,7 +129,7 @@ pip install pandas numpy matplotlib scikit-learn scipy
 ```bash
 cd Code/
 # Compile e execute a simulação
-./waf --run "packet_5G --param1=value1 --param2=value2"
+./Ns3 --run scratch/packet_5G
 ```
 
 ### 2. Converter Dados para CSV
