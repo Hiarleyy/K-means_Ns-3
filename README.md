@@ -1,5 +1,7 @@
 # K-means NS-3: Otimização de Posicionamento de Antenas 5G
 
+> **Idiomas:** [🇧🇷 Português](README.md) | [🇺🇸 English](README_EN.md)
+
 ## 📋 Descrição
 
 Este projeto implementa uma solução de otimização para posicionamento de antenas em redes 5G utilizando o algoritmo K-means. O sistema combina simulações NS-3 (Network Simulator 3) com análise de dados em Python para otimizar a localização de estações base (eNodeB/gNodeB) baseada na distribuição de usuários e métricas de qualidade de sinal.
